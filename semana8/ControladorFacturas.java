@@ -72,19 +72,26 @@ public class ControladorFacturas {
     }
 
     private void listarClientesPorImporte() {
-        double minimo = vista.leerDouble("Introduce el importe mínimo: ");
-        String[] filas = facturas.stream()
-                .filter(f -> f.calcularImporteFinal() > minimo)
-                .map(f -> String.format("| %-20s | %-15s | %-8.2f |", f.getNombreCliente(), f.getNif(), f.calcularImporteFinal()))
-                .toArray(String[]::new);
-
-        if (filas.length == 0) {
-            vista.mostrarMensaje("No hay clientes con facturas superiores al importe mínimo.");
-        } else {
-            String cabecera = String.format("| %-20s | %-15s | %-8s |", "Cliente", "NIF", "Importe Final");
-            vista.mostrarTabla(cabecera, filas);
+        try {
+            double minimo = vista.leerDouble("Introduce el importe mínimo: ");
+    
+            // Filtrar facturas con importe final mayor al mínimo
+            List<String> filas = facturas.stream()
+                    .filter(f -> f != null && f.calcularImporteFinal() > minimo) // Evitar facturas nulas
+                    .map(f -> String.format("| %-20s | %-15s | %-8.2f |", f.getNombreCliente(), f.getNif(), f.calcularImporteFinal()))
+                    .toList(); // Convertir el flujo a una lista
+    
+            if (filas.isEmpty()) {
+                vista.mostrarMensaje("No hay clientes con facturas superiores al importe mínimo.");
+            } else {
+                String cabecera = String.format("| %-20s | %-15s | %-8s |", "Cliente", "NIF", "Importe Final");
+                vista.mostrarTabla(cabecera, filas.toArray(new String[0]));
+            }
+        } catch (Exception e) {
+            vista.mostrarMensaje("Error al listar clientes: " + e.getMessage());
         }
     }
+    
 
     private void mostrarFacturas() {
         if (facturas.isEmpty()) {

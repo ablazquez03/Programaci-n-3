@@ -38,7 +38,7 @@ public class Fruteria {
             System.out.println("|--------------------------------------------|");
 
             System.out.print("¿Deseas atender a otro cliente? (s/n): ");
-            scanner.nextLine(); // Limpian el salto de línea
+            scanner.nextLine(); 
             String respuesta = scanner.nextLine();
 
             if (!respuesta.equalsIgnoreCase("s")) {

@@ -3,8 +3,13 @@ package semana8;
 import java.util.Scanner;
 
 public class VistaAlumnos {
-    private final Scanner scanner = new Scanner(System.in);
+    public final Scanner scanner;
 
+    public VistaAlumnos() {
+
+        this.scanner = new Scanner(System.in);
+
+    }
     public void mostrarMenu() {
         System.out.println("\nMenú Alumnos:");
         System.out.println("1.- Calcular promedio general");

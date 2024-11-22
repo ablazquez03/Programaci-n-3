@@ -21,6 +21,14 @@ public class Factura {
         this.iva = iva;
     }
 
+    public String getNombreCliente() {
+        return nombreCliente;
+    }
+
+    public String getNif() {
+        return nif;
+    }
+
     public double calcularImporteFinal() {
         return importe * (1 - descuento) * (1 + iva);
     }

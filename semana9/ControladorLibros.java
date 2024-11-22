@@ -1,14 +1,21 @@
 package semana9;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class ControladorLibros {
     private final List<Libro> libros;
     private final VistaLibros vista;
     private static final Path LIBROS_BIN = Paths.get(System.getProperty("user.home"), "Escritorio", "libros.bin");
+    private static final Path LIBROS_CSV = Paths.get(System.getProperty("user.home"), "Escritorio", "libros.csv");
+    private static final Path LIBROS_JSON = Paths.get(System.getProperty("user.home"), "Escritorio", "libros.json");
+    private static final Path LIBROS_XML = Paths.get(System.getProperty("user.home"), "Escritorio", "libros.xml");
 
     public ControladorLibros(VistaLibros vista) {
         this.libros = new ArrayList<>();
@@ -110,8 +117,6 @@ public class ControladorLibros {
         }
     }
 
-    // Métodos para eliminar, modificar, importar/exportar (pendientes de implementar).
-
     private void eliminarLibro() {
         mostrarLibros();
         int indice = vista.leerEntero("Introduce el índice del libro a eliminar: ");
@@ -120,6 +125,101 @@ public class ControladorLibros {
             vista.mostrarMensaje("Libro eliminado con éxito.");
         } else {
             vista.mostrarMensaje("Índice no válido.");
+        }
+    }
+
+    private void modificarLibro() {
+        mostrarLibros();
+        int indice = vista.leerEntero("Introduce el índice del libro a modificar: ");
+        if (indice >= 0 && indice < libros.size()) {
+            Libro libro = libros.get(indice);
+            String nuevoTitulo = vista.leerString("Introduce el nuevo título (deja vacío para no cambiar): ");
+            if (!nuevoTitulo.isEmpty()) libro.setTitulo(nuevoTitulo);
+
+            String nuevoAutor = vista.leerString("Introduce el nuevo autor (deja vacío para no cambiar): ");
+            if (!nuevoAutor.isEmpty()) libro.setAutor(nuevoAutor);
+
+            int nuevoAnio = vista.leerEntero("Introduce el nuevo año de publicación (0 para no cambiar): ");
+            if (nuevoAnio != 0) libro.setAnioPublicacion(nuevoAnio);
+
+            String nuevoIsbn = vista.leerString("Introduce el nuevo ISBN (deja vacío para no cambiar): ");
+            if (!nuevoIsbn.isEmpty()) libro.setIsbn(nuevoIsbn);
+
+            vista.mostrarMensaje("Libro modificado con éxito.");
+        } else {
+            vista.mostrarMensaje("Índice no válido.");
+        }
+    }
+
+    private void exportarCSV() {
+        try (BufferedWriter bw = Files.newBufferedWriter(LIBROS_CSV)) {
+            for (Libro libro : libros) {
+                bw.write(String.join(",", libro.getTitulo(), libro.getAutor(),
+                        String.valueOf(libro.getAnioPublicacion()), libro.getIsbn()));
+                bw.newLine();
+            }
+            vista.mostrarMensaje("Libros exportados a 'libros.csv'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al exportar libros: " + e.getMessage());
+        }
+    }
+
+    private void exportarJSON() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(LIBROS_JSON.toFile(), libros);
+            vista.mostrarMensaje("Libros exportados a 'libros.json'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al exportar libros: " + e.getMessage());
+        }
+    }
+
+    private void exportarXML() {
+        try {
+            XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.writeValue(LIBROS_XML.toFile(), libros);
+            vista.mostrarMensaje("Libros exportados a 'libros.xml'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al exportar libros: " + e.getMessage());
+        }
+    }
+
+    private void importarCSV() {
+        try (BufferedReader br = Files.newBufferedReader(LIBROS_CSV)) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                if (partes.length == 4) {
+                    libros.add(new Libro(partes[0], partes[1], Integer.parseInt(partes[2]), partes[3]));
+                }
+            }
+            vista.mostrarMensaje("Libros importados desde 'libros.csv'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al importar libros: " + e.getMessage());
+        }
+    }
+
+    private void importarJSON() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Libro> importados = mapper.readValue(LIBROS_JSON.toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, Libro.class));
+            libros.addAll(importados);
+            vista.mostrarMensaje("Libros importados desde 'libros.json'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al importar libros: " + e.getMessage());
+        }
+    }
+
+    private void importarXML() {
+        try {
+            XmlMapper xmlMapper = new XmlMapper();
+            List<Libro> importados = xmlMapper.readValue(LIBROS_XML.toFile(),
+                    xmlMapper.getTypeFactory().constructCollectionType(List.class, Libro.class));
+            libros.addAll(importados);
+            vista.mostrarMensaje("Libros importados desde 'libros.xml'.");
+        } catch (IOException e) {
+            vista.mostrarMensaje("Error al importar libros: " + e.getMessage());
         }
     }
 }

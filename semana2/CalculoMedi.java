@@ -1,5 +1,4 @@
 package semana2;
-import com.coti.textfiletools.AuxText;
 import java.util.Scanner;
 
 public class CalculoMedi {
